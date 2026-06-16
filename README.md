@@ -148,3 +148,7 @@ posturechecker/
 │
 └── requirements.txt
 ```
+
+## Author
+
+Matthew Lee
