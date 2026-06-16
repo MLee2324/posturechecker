@@ -63,3 +63,8 @@ for feature, importance in zip(X.columns, model.feature_importances_):
 
 # load to dump to use in main.py
 joblib.dump(model, "posture_model.pkl")
+
+from sklearn.metrics import confusion_matrix
+
+print(confusion_matrix(y_test, predictions))
+print(model.score(X_test, y_test))

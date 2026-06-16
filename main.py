@@ -1,9 +1,16 @@
 import cv2
+import os
 import mediapipe as mp
 import numpy as np
+import time
+import joblib 
+import threading
+import pandas as pd
 from drawers import (
     draw_lm
 )
+
+model = joblib.load("train/posture_model.pkl")
 
 mp_pose = mp.solutions.pose
 
@@ -11,9 +18,11 @@ pose = mp_pose.Pose(
     static_image_mode=False,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
-    model_complexity=2
+    model_complexity=1
 )
 
+def play_alert():
+    os.system("afplay /System/Library/Sounds/Glass.aiff")
 
 def calculate_angle(a, b, c):
     a = np.array(a)
@@ -41,9 +50,7 @@ def extract_features(lm):
     r_shoulder = np.array([lm[12].x, lm[12].y])
     l_hip = np.array([lm[23].x, lm[23].y])
 
-    neck_vertical_ref = np.array([neck[0], neck[1] + 0.3])
-
-    neck_angle = calculate_angle(ear, neck, neck_vertical_ref)
+    neck_angle = calculate_angle(ear, neck, l_shoulder)
     spine_angle = calculate_angle(ear, l_shoulder, l_hip)
 
     forward_head_offset = ear[0] - neck[0]
@@ -58,7 +65,10 @@ def extract_features(lm):
 
 
 def main():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
+
+    last_beep_time = 0
+    BEEP_INTERVAL = 2
 
     print("\n╔══════════════════════════════════════╗")
     print("║        POSTURE CHECKER               ║")
@@ -86,7 +96,7 @@ def main():
 
         status = "Live Posture Checker"
 
-        cv2.rectangle(frame, (0, 0), (frame.shape[1], 45), (30, 30, 30), -1)
+        cv2.rectangle(frame, (0, 50), (430, 225), (20, 20, 20), -1)
         cv2.putText(
             frame,
             status,
@@ -98,7 +108,31 @@ def main():
         )
 
         if features:
+            X_live = pd.DataFrame([features], columns=[
+            "neck_angle",
+            "spine_angle",
+            "forward_head_offset",
+            "shoulder_tilt"
+            ])
+
+            prediction = model.predict(X_live)[0]
+
+            if prediction == 0:
+                posture_status = "GOOD POSTURE"
+                posture_color = (0,255,0)
+            else:
+                posture_status = "BAD POSTURE"
+                posture_color = (0,0,255)
+
+                if time.time() - last_beep_time > BEEP_INTERVAL:
+                    threading.Thread(
+                        target=play_alert,
+                        daemon=True,
+                    ).start()
+                    last_beep_time = time.time()
+
             lines = [
+                f"Prediction: {posture_status}",
                 f"Neck angle: {features['neck_angle']:.1f}",
                 f"Spine angle: {features['spine_angle']:.1f}",
                 f"Head offset: {features['forward_head_offset']:.3f}",
@@ -110,13 +144,15 @@ def main():
             for i, line in enumerate(lines):
                 y = 85 + i * 30
 
+                text_color = posture_color if i == 0 else (255, 255, 255)
+
                 cv2.putText(
                     frame,
                     line,
                     (15, y),
                     cv2.FONT_HERSHEY_DUPLEX,
                     0.8,
-                    (255, 255, 255),
+                    text_color,
                     2
                 )
 

@@ -13,7 +13,7 @@ from drawers import (
 mp_pose = mp.solutions.pose
 
 pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, 
-min_tracking_confidence=0.5, model_complexity=2)
+min_tracking_confidence=0.5, model_complexity=1)
 
 # Directories 
 RUNS_DIR = "runs"
@@ -92,7 +92,7 @@ def save_session(data, label):
 
 # Collect Data 
 def main():
-    cap = cv2.VideoCapture(1)  # change to 1 if using external webcam
+    cap = cv2.VideoCapture(0)  # change to 1 if using external webcam
 
     label = None   # "good" or "bad"
     recording = False
@@ -103,10 +103,10 @@ def main():
     print("\n╔══════════════════════════════════════╗")
     print("║       POSTURE DATA COLLECTOR         ║")
     print("╠══════════════════════════════════════╣")
-    print("║  G  – start recording GOOD posture   ║")
-    print("║  B  – start recording BAD posture    ║")
-    print("║  S  – stop & save current session    ║")
-    print("║  Q  – quit                           ║")
+    print("║  G  - start recording GOOD posture   ║")
+    print("║  B  - start recording BAD posture    ║")
+    print("║  S  - stop & save current session    ║")
+    print("║  Q  - quit                           ║")
     print("╚══════════════════════════════════════╝\n")
 
     while cap.isOpened():
@@ -135,7 +135,7 @@ def main():
             status = f"REC [{label.upper()}]  {len(session_data)} frames"
         else:
             color  = (180, 180, 180)
-            status = "IDLE – press G or B to record"
+            status = "IDLE - press G or B to record"
 
         cv2.rectangle(frame, (0, 0), (frame.shape[1], 45), (30, 30, 30), -1)
         cv2.putText(frame, status, (10, 30),
