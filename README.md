@@ -2,9 +2,11 @@
 
 A real-time posture monitoring system that uses MediaPipe Pose and a Random Forest classifier to detect good and bad sitting posture from a webcam feed.
 
+---
+
 ## Installation
 
-Install dependencies:
+Clone the repository and install the required dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -20,7 +22,7 @@ Run:
 python collect.py
 ```
 
-Controls:
+### Controls
 
 ```text
 G = Record Good Posture
@@ -29,7 +31,7 @@ S = Stop and Save
 Q = Quit
 ```
 
-CSV files will be saved to:
+The recorded CSV files will be saved to:
 
 ```text
 runs/good_posture/
@@ -38,7 +40,7 @@ runs/bad_posture/
 
 ---
 
-## Train Model
+## Train the Model
 
 Run:
 
@@ -46,9 +48,10 @@ Run:
 python train/train.py
 ```
 
-This will:
+This script will:
 
-- Load all CSV files
+- Load all collected CSV files
+- Combine the dataset
 - Train a Random Forest classifier
 - Evaluate model performance
 - Save the trained model as:
@@ -70,13 +73,14 @@ python main.py
 The application will:
 
 - Open the webcam
+- Detect body landmarks using MediaPipe Pose
 - Extract posture features
-- Load the trained model
-- Predict Good or Bad posture in real time
-- Display posture status on screen
-- Play an audio alert when poor posture is detected
+- Load the trained Random Forest model
+- Predict posture in real time
+- Display posture status on the screen
+- Play an audio alert while poor posture is detected
 
-Press:
+### Controls
 
 ```text
 Q = Quit
@@ -91,20 +95,10 @@ Q = Quit
 Angle formed by:
 
 ```text
-Ear → Neck → Shoulder
+Ear → Neck → Shoulder Midpoint
 ```
 
-Used to measure head alignment.
-
-### Spine Angle
-
-Angle formed by:
-
-```text
-Ear → Shoulder → Hip
-```
-
-Used to estimate upper-body curvature.
+Measures the alignment of the head relative to the shoulders.
 
 ### Forward Head Offset
 
@@ -114,7 +108,7 @@ Horizontal distance between:
 Ear and Neck
 ```
 
-Larger values indicate the head is positioned farther forward.
+Larger values indicate that the head is positioned farther forward.
 
 ### Shoulder Tilt
 
@@ -124,7 +118,59 @@ Vertical difference between:
 Left Shoulder and Right Shoulder
 ```
 
-Used to measure shoulder asymmetry.
+Measures shoulder imbalance or leaning.
+
+---
+
+## Troubleshooting
+
+### Webcam does not open
+
+- Make sure no other application is using the webcam.
+- Verify that your operating system has granted camera permissions to Python or your IDE.
+
+### MediaPipe installation issues
+
+Try reinstalling the required packages:
+
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+If you are using macOS, Python 3.9 or 3.10 is recommended for the best MediaPipe compatibility.
+
+### Model file not found
+
+If you receive an error such as:
+
+```text
+FileNotFoundError: posture_model.pkl
+```
+
+Train the model first:
+
+```bash
+python train/train.py
+```
+
+This will generate:
+
+```text
+train/posture_model.pkl
+```
+
+### Poor prediction accuracy
+
+- Collect additional training samples.
+- Record examples from different sitting positions and lighting conditions.
+- Keep the camera positioned consistently during both training and testing.
+
+### No posture detection
+
+- Ensure your upper body is visible in the camera frame.
+- Avoid excessive occlusion of the face or shoulders.
+- Make sure the environment has sufficient lighting.
 
 ---
 
@@ -148,6 +194,8 @@ posturechecker/
 │
 └── requirements.txt
 ```
+
+---
 
 ## Author
 
