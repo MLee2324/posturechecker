@@ -75,9 +75,9 @@ def extract_features(lm):
     }
 
 # CSV helpers 
-FIELDNAMES = ["neck_angle", "spine_angle", "forward_head_offset", "shoulder_tilt"]
+FIELDNAMES = ["neck_angle", "spine_angle", "forward_head_offset", "shoulder_tilt", "person"]
 
-def save_session(data, label):
+def save_session(data, label, person):
     """Save a list of feature dicts to a timestamped CSV."""
     folder = GOOD_DIR if label == "good" else BAD_DIR
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -85,13 +85,17 @@ def save_session(data, label):
     with open(filename, "w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
         writer.writeheader()
-        writer.writerows(data)
+        for row in data:
+            writer.writerow({**row, "person": person})
 
     print(f"[✓] Saved {len(data)} frames → {filename}")
 
 
 # Collect Data 
 def main():
+    # Recorded in every CSV so train/evaluate_by_person.py can test on unseen people
+    person = input("Who is being recorded? (name or ID): ").strip() or "unknown"
+
     cap = cv2.VideoCapture(0)  # change to 1 if using external webcam
 
     label = None   # "good" or "bad"
@@ -216,7 +220,7 @@ def main():
         elif key == ord('s'):
             if recording and len(session_data) > 0:
                 recording = False
-                save_session(session_data, label)
+                save_session(session_data, label, person)
                 session_data = []
                 label        = None
                 print("[■] Session stopped and saved.\n")

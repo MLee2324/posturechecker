@@ -60,6 +60,18 @@ This script will:
 train/posture_model.pkl
 ```
 
+### Test on unseen people
+
+`train.py` scores the model on a random split, which puts nearly identical frames from the same recording in both training and testing. To see how the model does on someone it has never seen, run:
+
+```bash
+python train/evaluate_by_person.py
+```
+
+It uses the same features and Random Forest settings and changes only the split. It reports F1 (for bad posture) on a random split, on held-out recordings, and with each person held out in turn.
+
+`collect.py` asks who is being recorded and saves that in a `person` column. Older recordings have no `person` column, so the script infers it from the file timestamps (`PERSON_SESSIONS` at the top of the script). Edit that list if it doesn't match who was recorded.
+
 ---
 
 ## Run Live Posture Detection
